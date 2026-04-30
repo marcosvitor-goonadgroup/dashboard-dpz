@@ -32,6 +32,13 @@ const parseSearchDate = (dateString: string): Date => {
   }
 };
 
+const CAMPANHAS_BONIFICADAS = [
+  'campanha do agasalho'
+];
+
+const isCampanhaBonificada = (campanha: string): boolean =>
+  CAMPANHAS_BONIFICADAS.includes(campanha.trim().toLowerCase());
+
 const normalizeVeiculo = (veiculo: string): string => {
   const normalized = veiculo.trim();
   const lower = normalized.toLowerCase();
@@ -72,12 +79,15 @@ export const fetchCampaignData = async (): Promise<ProcessedCampaignData[]> => {
               return;
             }
 
+            const campanha = row[26] || '';
+            const bonificada = isCampanhaBonificada(campanha);
+
             const dataRow: ProcessedCampaignData = {
               date: parseSearchDate(row[2]),
               campaignName: row[4] || '',
               adSetName: row[6] || '',
               adName: row[8] || '',
-              cost: parseCurrency(row[24]),
+              cost: bonificada ? 0 : parseCurrency(row[24]),
               impressions: parseNumber(row[12]),
               reach: 0,
               clicks: parseNumber(row[13]),
@@ -91,7 +101,7 @@ export const fetchCampaignData = async (): Promise<ProcessedCampaignData[]> => {
               tipoDeCompra: row[23] || '',
               videoEstaticoAudio: row[25] || '',
               image: '',
-              campanha: row[26] || '',
+              campanha,
               numeroPi: numeroPi,
               cliente: cliente,
               agencia: agencia
